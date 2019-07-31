@@ -50,8 +50,8 @@ int main(){
 
 	
 	/*//int toRBAdd[] = {7,3,18,10,22,8,11,26,2,6,13};
-	//int toRBAdd[] = {20,30,40,35,50};
-	int toRBAdd[] = {27,28,2,21,25};
+	//int toRBAdd[] = {16,8,20,26,28,24};
+	//int toRBAdd[] = {27,28,2,21,25};
 	for(int x = 0; x < sizeof(toRBAdd) / sizeof(toRBAdd[0]); x++){
 		int currentSize = getSize(root) + 1;
 		root = rbAdd(root,toRBAdd[x]);
@@ -74,6 +74,7 @@ int main(){
 			break;
 		}
 	}
+	
 
 	infixPrint(root);
 	printf("%d\n", getSize(root));
@@ -81,7 +82,7 @@ int main(){
 	
 	/*//int toRBRemove[] = {18,11,3,10,22};
 	//int toRBRemove[] = {20};
-	int toRBRemove[] = {27,28,2,21,25};
+	//int toRBRemove[] = {27,28,2,21,25};
 	for(int x = 0; x < sizeof(toRBRemove) / sizeof(toRBRemove[0]); x++){
 		root = rbRemove(root, toRBRemove[x]);
 		infixPrint(root);
@@ -123,7 +124,7 @@ Node* rbAdd(Node* root, int key){
 		return toRBAdd;
 	} else {
 		root = rbAdd_helper(root, toRBAdd);
-		infixPrint(root);
+		//infixPrint(root);
 		if(checkValidity(root) == 1){
 			return root;
 		}
@@ -299,10 +300,22 @@ Node* fixViolation(Node* root, Node* rbAdded){
 
 Node* leftRot(Node* z){
 	int initHeight = z->height;
+	int zLOrR = 0;
+	Node* zParent = z->parent;
+
+	if(zParent != NULL){
+		if(zParent->right != NULL && zParent->right == z){
+			zLOrR = 1;
+		}
+	}
 	Node* y = z->right;
 	Node* t2 = y->left;
 
 	y->parent = z->parent;
+	if(zParent != NULL){
+		if(zLOrR) zParent->right = y;
+		else zParent->left = y;
+	}
 
 	y->left = z;
 	z->right = t2;
@@ -317,11 +330,24 @@ Node* leftRot(Node* z){
 
 Node* rightRot(Node* z){
 	int initHeight = z->height;
+	int zLOrR = 0;
+	Node* zParent = z->parent;
+
+	if(zParent != NULL){
+		if(zParent->right != NULL && zParent->right == z){
+			zLOrR = 1;
+		}
+	}
+
 	Node* y = z->left;
 	Node* t3 = y->right;
 
 	y->parent = z->parent;
-	
+	if(zParent != NULL){
+		if(zLOrR) zParent->right = y;
+		else zParent->left = y;
+	}
+
 	z->left = t3;
 	y->right = z;
 
@@ -472,41 +498,47 @@ Node* rbRemove(Node* root, int key){
 
 					if(sLeftCol + sRightCol > 0){
 						//Sibling has at least one red child
-						//printf("Sibling has red child\n");
+						printf("Sibling has red child\n");
 						//infixPrint(uParent);
-						if(uParent->left == sibling){
+						u = uParent;
+						infixPrint(u);
+						if(u->left == sibling){
 							//S is left child
 							if(sRightCol == 1 && sLeftCol == 0){
 								//printf("LR case\n");
-								uParent->left->right->color = uParent->color;
-								uParent->left = leftRot(uParent->left);
+								u->left = leftRot(u->left);
+								u->left->parent = u;
+								u->left->left->color = u->color;
 							} else {
 								//printf("LL case\n");
-								uParent->left->left->color = uParent->left->color;
-								uParent->left->color = uParent->color;
+								u->left->left->color = u->left->color;
+								u->left->color = u->color;
 							}
-							//infixPrint(uParent);
-							uParent = rightRot(uParent);
+							//infixPrint(u);
+							u = rightRot(u);
 						} else {
 							if(sLeftCol == 1 && sRightCol == 0){
 								//printf("RL case\n");
-								uParent->right->left->color = uParent->color;
-								uParent->right = rightRot(uParent->right);
+								u->right = rightRot(u->right);
+								u->right->parent = u;
+								u->right->right->color = u->color;
 							} else {
 								//printf("RR case\n");
-								uParent->right->right->color = uParent->right->color;
-								uParent->right->color = uParent->color;
+								u->right->right->color = u->right->color;
+								u->right->color = u->color;
 							}
-							//infixPrint(uParent);
-							uParent = leftRot(uParent);
+							//infixPrint(u);
+							u = leftRot(u);
 						}
-						uParent->color = BLACK;
-						if(uParent->height == rootHeight) root = uParent;
+						u->color = BLACK;
+						uParent = u->parent;
+						infixPrint(u);
+						//if(u->height == rootHeight) root = u;
 
 						break;
 					} else {
 						//Sibling has only black children
-						//printf("Sibling has only black children\n");
+						printf("Sibling has only black children\n");
 						if(sibling != NULL)sibling->color = RED;
 
 						u = uParent;
@@ -520,23 +552,27 @@ Node* rbRemove(Node* root, int key){
 					}
 
 				} else {
-					//printf("Sibling color is RED\n");
+					printf("Sibling color is RED\n");
+					infixPrint(uParent);
+					infixPrint(sibling);
+					infixPrint(u);
+					if(uParent->left == sibling){
+						printf("L Case\n");
+						uParent = rightRot(uParent);
+						//sibling = uParent->right;
+						//u = uParent->right->right;
+						//uParent = uParent->right;
+					} else {
+						printf("R Case\n");
+						uParent = leftRot(uParent);
+						//sibling = uParent->left;
+						//infixPrint(uParent);
+						//u = uParent->left->left;
+						//uParent = uParent->left;
+					}
 					uParent->color = RED;
 					sibling->color = BLACK;
-					//infixPrint(uParent);
-					if(uParent->left == sibling){
-						//printf("L Case\n");
-						uParent = rightRot(uParent);
-						u = uParent->right->right;
-						uParent = uParent->right;
-					} else {
-						//printf("R Case\n");
-						uParent = leftRot(uParent);
-						//infixPrint(uParent);
-						u = uParent->left->left;
-						uParent = uParent->right;
-					}
-					//infixPrint(uParent);
+					infixPrint(uParent->parent);
 					//infixPrint(u);
 					//infixPrint(sibling);
 				}
@@ -566,7 +602,15 @@ Node* rbRemove(Node* root, int key){
 		uParent = u->parent;
 
 	}*/
+	if(root != NULL && root->parent != rootParent){
+		printf("Resetting root...\n");
+		while(root->parent != rootParent){
+			root = root->parent;
+			infixPrint(root);
+		}
+	}
 	if(root != NULL)fixHeights(root, rootHeight);
+	if(root != NULL && root->parent == NULL) root->color = BLACK;
 
 	//printf("Returning: ");
 	//infixPrint(root);
