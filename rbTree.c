@@ -45,7 +45,7 @@ int main(){
 	//Node root = {0, 0, 1,NULL, NULL, NULL};
 	Node* root = NULL;
 	srand(time(NULL));
-	int randVals[10];
+	int randVals[20];
 	//root = &root;
 
 	
@@ -60,7 +60,7 @@ int main(){
 		printf("\n");
 	}*/
 
-	for(int x = 0; x < 10; x++){
+	for(int x = 0; x < 20; x++){
 		randVals[x] = rand() % 30;
 		printf("%d\t%d\n", randVals[x],x);
 		int currentSize = getSize(root) + 1;
@@ -89,7 +89,7 @@ int main(){
 		printf("\n");
 	}*/
 
-	for(int x = 0; x < 10; x++){
+	for(int x = 0; x < 20; x++){
 		root = rbRemove(root, randVals[x]);
 		infixPrint(root);
 		printf("\n");
@@ -539,15 +539,20 @@ Node* rbRemove(Node* root, int key){
 					} else {
 						//Sibling has only black children
 						printf("Sibling has only black children\n");
-						if(sibling != NULL)sibling->color = RED;
+						if(sibRight){
+							uParent->right->color = RED;
+						} else {
+							uParent->left->color = RED;
+						}
+						//sibling->color = RED;
 
-						u = uParent;
+						//u = uParent;
 						if(uParent != BLACK){
-							u->color = BLACK;
+							uParent->color = BLACK;
 							break;
 						} else {
 							u = uParent;
-							uParent = u->parent;
+							uParent = uParent->parent;
 						}
 					}
 
