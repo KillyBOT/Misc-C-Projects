@@ -26,7 +26,7 @@ Node* fixViolation(Node* root, Node* rbAdded);
 Node* leftRot(Node* z);
 Node* rightRot(Node* z);
 
-void rbRemove(Node* root, int key);
+Node* rbRemove(Node* root, int key);
 Node* rbReplace(Node* v,Node* u);
 
 int getHeight(Node* root);
@@ -45,21 +45,22 @@ int main(){
 	//Node root = {0, 0, 1,NULL, NULL, NULL};
 	Node* root = NULL;
 	srand(time(NULL));
-	int randVals[20];
+	int randVals[10];
 	//root = &root;
 
 	
-	int toRBAdd[] = {20,30,40,35,50};
+	/*//int toRBAdd[] = {7,3,18,10,22,8,11,26,2,6,13};
+	//int toRBAdd[] = {20,30,40,35,50};
+	int toRBAdd[] = {27,28,2,21,25};
 	for(int x = 0; x < sizeof(toRBAdd) / sizeof(toRBAdd[0]); x++){
 		int currentSize = getSize(root) + 1;
 		root = rbAdd(root,toRBAdd[x]);
 		infixPrint(root);
 		if(!checkValidity(root)) break;
 		printf("\n");
+	}*/
 
-	}
-
-	/*for(int x = 0; x < 10; x++){
+	for(int x = 0; x < 10; x++){
 		randVals[x] = rand() % 30;
 		printf("%d\t%d\n", randVals[x],x);
 		int currentSize = getSize(root) + 1;
@@ -72,22 +73,26 @@ int main(){
 			}
 			break;
 		}
-	}*/
+	}
 
 	infixPrint(root);
 	printf("%d\n", getSize(root));
-	int toRBRemove[] = {20};//,10,22};
+	
+	
+	/*//int toRBRemove[] = {18,11,3,10,22};
+	//int toRBRemove[] = {20};
+	int toRBRemove[] = {27,28,2,21,25};
 	for(int x = 0; x < sizeof(toRBRemove) / sizeof(toRBRemove[0]); x++){
-		rbRemove(root, toRBRemove[x]);
-		infixPrint(root);
-		printf("\n");
-	}
-
-	/*for(int x = 0; x < 10; x++){
-		rbRemove(root, randVals[x]);
+		root = rbRemove(root, toRBRemove[x]);
 		infixPrint(root);
 		printf("\n");
 	}*/
+
+	for(int x = 0; x < 10; x++){
+		root = rbRemove(root, randVals[x]);
+		infixPrint(root);
+		printf("\n");
+	}
 	
 
 	//infixPrint(root);
@@ -329,7 +334,7 @@ Node* rightRot(Node* z){
 
 }
 
-void rbRemove(Node* root, int key){
+Node* rbRemove(Node* root, int key){
 	printf("Removing %d from ", key);
 	infixPrint(root);
 	int lOrR = 0;
@@ -350,19 +355,21 @@ void rbRemove(Node* root, int key){
 
 	//If you can't find the value
 	if(v == NULL) {
-		return;
+		return root;
 	}
 
 	//If the node's count is greater than 1
 	if(v->count > 1){
 		v->count -= 1;
-		return;
+		return root;
 	}
 
-	printf("v: ");
-	infixPrint(v);
+	//printf("v: ");
+	//infixPrint(v);
 
 	Node* u = NULL;
+	//This is just for the iterating up
+	Node* uParent = NULL;
 
 	if(v->left != NULL && v->right != NULL){
 		Node* currentNode = v->right;
@@ -370,15 +377,23 @@ void rbRemove(Node* root, int key){
 			currentNode = currentNode->left;
 		}
 		int inOrdSuc = currentNode->key;
-		//printf("Recursively removing %d at ",inOrdSuc);
-		infixPrint(v);
+		//printf("Recursively removing %d...\n",inOrdSuc);
+		/*infixPrint(v);
 		infixPrint(v->left);
-		infixPrint(v->right);
-		printf("\n");
-		rbRemove(v, inOrdSuc);
+		infixPrint(v->right);*/
+		Node* replacementLeft = v->left;
+		//printf("\n");
+		Node* replacement = rbRemove(v->right, inOrdSuc);
+		if(replacement != NULL)replacement->parent = v;
 		//infixPrint(replacement);
+		//infixPrint(v->right);
+		v->right = replacement;
+		v->left = replacementLeft;
+		//infixPrint(replacementLeft);
+		//infixPrint(v);
 		v->key = inOrdSuc;
-
+		//u = v;
+		//uParent = u->parent;
 		//v->right = rbRemove(v->right, inOrdSuc);
 	} else {
 
@@ -388,15 +403,10 @@ void rbRemove(Node* root, int key){
 			u = v->right;
 		}
 
-		printf("u: ");
-		infixPrint(u);
-
 		int vCol = v->color;
 		int uCol = ((u == NULL) ? BLACK : u->color);
 
 		//Replace v with u
-
-		Node* uParent = NULL;
 
 		if(v->parent != NULL){
 				if(!lOrR){
@@ -405,18 +415,30 @@ void rbRemove(Node* root, int key){
 					v->parent->right = u;
 				}
 				uParent = v->parent;
-			}
+		} else {
+			if(u != NULL)u = fixHeights(u, rootHeight);
+			if(u != NULL)u->color = BLACK;
+			return u;
+		}
 
-		if(u != NULL) u->parent = v->parent;
+		if(v == root) root = u;
+		if(u != NULL) {
+			u->parent = v->parent;
+		}
+		uParent = v->parent;
+
+
+		//printf("u: ");
+		//infixPrint(u);
 
 		//If either u or v is red
 		if(vCol + uCol > 0){
 			//Replace v with u, and color u red
-			printf("U or V is red\n");
+			//printf("U or V is red\n");
 			if(u != NULL)u->color = BLACK;
 		} else {
 
-			printf("U and V are BLACK, getting rid of the double black\n");
+			//printf("U and V are BLACK, getting rid of the double black\n");
 
 			Node* sibling = NULL;
 
@@ -430,18 +452,18 @@ void rbRemove(Node* root, int key){
 				}
 				else sibling = uParent->left;
 
-				printf("Sibling: ");
-				infixPrint(sibling);
+				//printf("Sibling: ");
+				//infixPrint(sibling);
 
 				int sibCol = ((sibling == NULL) ? BLACK : sibling->color);
 
 				//Sibling is BLACK
 				if(sibling == NULL){
-					printf("Sibling is NULL\n");
+					//printf("Sibling is NULL\n");
 					u = uParent;
 					uParent = u->parent;
 				} else if(sibCol == BLACK){
-					printf("Sibling color is BLACK\n");
+					//printf("Sibling color is BLACK\n");
 
 					Node* sLeft = sibling->left;
 					Node* sRight = sibling->right;
@@ -450,41 +472,41 @@ void rbRemove(Node* root, int key){
 
 					if(sLeftCol + sRightCol > 0){
 						//Sibling has at least one red child
-						printf("Sibling has red child\n");
-						infixPrint(uParent);
+						//printf("Sibling has red child\n");
+						//infixPrint(uParent);
 						if(uParent->left == sibling){
 							//S is left child
 							if(sRightCol == 1 && sLeftCol == 0){
-								printf("LR case\n");
+								//printf("LR case\n");
 								uParent->left->right->color = uParent->color;
 								uParent->left = leftRot(uParent->left);
 							} else {
-								printf("LL case\n");
+								//printf("LL case\n");
 								uParent->left->left->color = uParent->left->color;
 								uParent->left->color = uParent->color;
 							}
-							infixPrint(uParent);
+							//infixPrint(uParent);
 							uParent = rightRot(uParent);
 						} else {
 							if(sLeftCol == 1 && sRightCol == 0){
-								printf("RL case\n");
+								//printf("RL case\n");
 								uParent->right->left->color = uParent->color;
 								uParent->right = rightRot(uParent->right);
 							} else {
-								printf("RR case\n");
+								//printf("RR case\n");
 								uParent->right->right->color = uParent->right->color;
 								uParent->right->color = uParent->color;
 							}
-							infixPrint(uParent);
+							//infixPrint(uParent);
 							uParent = leftRot(uParent);
 						}
 						uParent->color = BLACK;
-						u = uParent;
-						infixPrint(u);
+						if(uParent->height == rootHeight) root = uParent;
+
 						break;
 					} else {
 						//Sibling has only black children
-						printf("Sibling has only black children\n");
+						//printf("Sibling has only black children\n");
 						if(sibling != NULL)sibling->color = RED;
 
 						u = uParent;
@@ -498,39 +520,35 @@ void rbRemove(Node* root, int key){
 					}
 
 				} else {
-					printf("Sibling color is RED\n");
+					//printf("Sibling color is RED\n");
 					uParent->color = RED;
 					sibling->color = BLACK;
-					infixPrint(uParent);
+					//infixPrint(uParent);
 					if(uParent->left == sibling){
-						printf("L Case\n");
+						//printf("L Case\n");
 						uParent = rightRot(uParent);
 						u = uParent->right->right;
 						uParent = uParent->right;
 					} else {
-						printf("R Case\n");
+						//printf("R Case\n");
 						uParent = leftRot(uParent);
-						infixPrint(uParent);
+						//infixPrint(uParent);
 						u = uParent->left->left;
 						uParent = uParent->right;
 					}
-					infixPrint(uParent);
-					infixPrint(u);
-					infixPrint(sibling);
+					//infixPrint(uParent);
+					//infixPrint(u);
+					//infixPrint(sibling);
 				}
-				printf("u: ");
-				infixPrint(u);
+				//printf("u: ");
+				//infixPrint(u);
 			}
-
-			if(u->parent == rootParent && root->parent != rootParent){
-				root = u;
-			}
+			//infixPrint(u);
 
 		}
 	}
 
-	/*while(u->parent != rootParent){
-		Node* uParent = u->parent;
+	/*while(uParent != rootParent){
 		infixPrint(u);
 		infixPrint(uParent);
 		if(u->key < uParent->key){
@@ -541,13 +559,18 @@ void rbRemove(Node* root, int key){
 			uParent->right->parent = uParent;
 		}
 
-		u = uParent;
-	}*/
+		printf("test\n");
 
-	fixHeights(root, 1);
+		u = uParent;
+		if(u == NULL) break;
+		uParent = u->parent;
+
+	}*/
+	if(root != NULL)fixHeights(root, rootHeight);
 
 	//printf("Returning: ");
-	infixPrint(root);
+	//infixPrint(root);
+	return root;
 }
 
 int getHeight(Node* root){
