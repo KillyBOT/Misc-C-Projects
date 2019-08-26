@@ -5,6 +5,7 @@
 
 #define BLACK 0
 #define RED 1
+#define TREE_SIZE 50
 
 struct Node{
 	int key;
@@ -45,7 +46,7 @@ int main(){
 	//Node root = {0, 0, 1,NULL, NULL, NULL};
 	Node* root = NULL;
 	srand(time(NULL));
-	int randVals[20];
+	int randVals[TREE_SIZE];
 	//root = &root;
 
 	
@@ -60,8 +61,8 @@ int main(){
 		printf("\n");
 	}*/
 
-	for(int x = 0; x < 20; x++){
-		randVals[x] = rand() % 30;
+	for(int x = 0; x < TREE_SIZE; x++){
+		randVals[x] = rand() % (TREE_SIZE * 3);
 		printf("%d\t%d\n", randVals[x],x);
 		int currentSize = getSize(root) + 1;
 		root = rbAdd(root, randVals[x]);
@@ -89,7 +90,7 @@ int main(){
 		printf("\n");
 	}*/
 
-	for(int x = 0; x < 20; x++){
+	for(int x = 0; x < TREE_SIZE; x++){
 		root = rbRemove(root, randVals[x]);
 		infixPrint(root);
 		printf("\n");
@@ -404,6 +405,7 @@ Node* rbRemove(Node* root, int key){
 		}
 		int inOrdSuc = currentNode->key;
 		int inOrdCount = currentNode->count;
+		int inOrdColor = currentNode->color;
 		currentNode->count = 1;
 		//printf("Recursively removing %d...\n",inOrdSuc);
 		/*infixPrint(v);
@@ -421,6 +423,7 @@ Node* rbRemove(Node* root, int key){
 		//infixPrint(v);
 		v->key = inOrdSuc;
 		v->count = inOrdCount;
+		v->color = inOrdColor;
 		//u = v;
 		//uParent = u->parent;
 		//v->right = rbRemove(v->right, inOrdSuc);
@@ -542,20 +545,27 @@ Node* rbRemove(Node* root, int key){
 					} else {
 						//Sibling has only black children
 						printf("Sibling has only black children\n");
-						if(sibRight){
+						if(u != NULL) uParent = u->parent;
+						else break;
+						/*if(sibRight){
 							uParent->right->color = RED;
 						} else {
 							uParent->left->color = RED;
-						}
-						//sibling->color = RED;
+						}*/
+						sibling->color = RED;
 
+						int tempCol = ((uParent != NULL) ? uParent->color : BLACK);
+						if(uParent != NULL) uParent->color = ((u != NULL) ? u->color : BLACK);
+						if(u != NULL) u->color = tempCol;
 						//u = uParent;
-						if(uParent != BLACK){
-							uParent->color = BLACK;
+						if(uParent != NULL && uParent->color == RED){
+
+							//uParent->color = BLACK;
 							break;
 						} else {
-							u = uParent;
-							uParent = uParent->parent;
+							if(u != NULL) u = u->parent;
+							else u = uParent;
+							uParent = u->parent;
 						}
 					}
 
