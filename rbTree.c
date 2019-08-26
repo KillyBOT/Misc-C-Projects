@@ -403,6 +403,8 @@ Node* rbRemove(Node* root, int key){
 			currentNode = currentNode->left;
 		}
 		int inOrdSuc = currentNode->key;
+		int inOrdCount = currentNode->count;
+		currentNode->count = 1;
 		//printf("Recursively removing %d...\n",inOrdSuc);
 		/*infixPrint(v);
 		infixPrint(v->left);
@@ -418,6 +420,7 @@ Node* rbRemove(Node* root, int key){
 		//infixPrint(replacementLeft);
 		//infixPrint(v);
 		v->key = inOrdSuc;
+		v->count = inOrdCount;
 		//u = v;
 		//uParent = u->parent;
 		//v->right = rbRemove(v->right, inOrdSuc);
