@@ -7,16 +7,17 @@
 #define SHORT 4
 #define LONG 8
 
-#define K 7703
-#define P 5651
-#define N 3011
+#define K 5471
+#define P 3221
+#define N 2153
 
 union rawData{
-	int intData;
-	char charData;
-	double doubleData;
-	short shortData;
-	long longData;
+	int i;
+	char c;
+	char** s;
+	double d;
+	short sh;
+	long l;
 };
 
 struct tableData{
@@ -40,24 +41,29 @@ int findPrime(int location);
 void printSieve(int* sieve, int size);
 
 struct node* createLinkedList();
-void addLL(struct node* head, int index, int element);
-void addLLEnd(struct node* head, int element);
+struct tableData createIntData(int data);
+struct tableData createDoubleData(double data);
+void addLL(struct node* head, int index, struct tableData cargo);
+void addLLEnd(struct node* head, struct tableData cargo);
 int llLength(struct node* head);
 void removeLL(struct node* head, int index);
 struct node* getLLNode(struct node* head, int index);
-int getLL(struct node* head, int index);
+struct tableData getLL(struct node* head, int index);
 
 struct hashTable* createHashTable(int (*hashFunction)(int));
 int perfectHashFunction(int x);
-void addHT(struct hashTable* hTable, int data);
-int checkIfInTable(struct hashTable* hTable, int data);
+void addHT(struct hashTable* hTable, struct tableData data);
+int checkIfInTable(struct hashTable* hTable, struct tableData data);
 void printHashFunction(int (*hashFunction)(int), int size);
 
 int main(){
 	printf("%d\n", findPrime(30));
+	union rawData test;
+	test.d = 8.6;
+	printf("%d\n", test.i);
 	struct hashTable* testHashTable = createHashTable(perfectHashFunction);
-	addHT(testHashTable, 5);
-	printf("%d\n", checkIfInTable(testHashTable,6));
+	addHT(testHashTable, createDoubleData(8.6));
+	printf("%d\n", checkIfInTable(testHashTable,createDoubleData(8.6)));
 	printHashFunction(&perfectHashFunction, 40);
 }
 
@@ -106,6 +112,20 @@ struct node* createLinkedList(){
 	return head;
 }
 
+struct tableData createIntData(int data){
+	struct tableData toRet;
+	toRet.type = INT;
+	toRet.data.i = data;
+	return toRet;
+}
+
+struct tableData createDoubleData(double data){
+	struct tableData toRet;
+	toRet.type = DOUBLE;
+	toRet.data.d = data;
+	return toRet;
+}
+
 struct node* getLLNode(struct node* head, int index){
 	struct node* current = head;
 	for(int x = -1; x < index; x++){
@@ -115,27 +135,22 @@ struct node* getLLNode(struct node* head, int index){
 	return current;
 }
 
-void addLL(struct node* head, int element, int index){
+void addLL(struct node* head, int index, struct tableData cargo){
 	struct node* prevNode = getLLNode(head, index-1);
 	struct node* newNode = (struct node*)malloc(sizeof(struct node));
 	struct tableData newData;
-	newData.data.intData = element;
-	newData.type = INT;
-	newNode->cargo = newData;
+	newNode->cargo = cargo;
 	newNode->nextNode = prevNode->nextNode;
 	prevNode->nextNode = newNode;
 }
 
-void addLLEnd(struct node* head, int element){
+void addLLEnd(struct node* head, struct tableData cargo){
 	struct node* current = head;
 	while(current->nextNode != NULL){
 		current = current->nextNode;
 	}
 	struct node* newNode = (struct node*)malloc(sizeof(struct node));
-	struct tableData newData;
-	newData.data.intData = element;
-	newData.type = INT;
-	newNode->cargo = newData;
+	newNode->cargo = cargo;
 	current->nextNode = newNode;
 }
 
@@ -156,8 +171,8 @@ int llLength(struct node* head) {
 	return size;
 };
 
-int getLLInt(struct node* head, int index){
-	return getLLNode(head, index)->cargo.data.intData;
+struct tableData getLL(struct node* head, int index){
+	return getLLNode(head, index)->cargo;
 }
 
 struct hashTable* createHashTable(int (*hashFunction)(int)){
@@ -174,19 +189,26 @@ int perfectHashFunction(int x){
 	return ( (K * x) % P) % N;
 }
 
-void addHT(struct hashTable* hTable, int data){
-	int hashedData = (*hTable->hashFunction)(data);
+void addHT(struct hashTable* hTable, struct tableData data){
+	int hashedData = (*hTable->hashFunction)(data.data.i % 4294956296);
 	addLLEnd(hTable->rawData[hashedData],data);
 }
 
-int checkIfInTable(struct hashTable* hTable, int data){
-	int hashedData = (*hTable->hashFunction)(data);
+int checkIfInTable(struct hashTable* hTable, struct tableData data){
+	int hashedData = (int)(*hTable->hashFunction)(data.data.i % 4294956296);
 	struct node* head = hTable->rawData[hashedData];
 	if(head->nextNode == NULL) return 0;
 	else {
 		head = head->nextNode;
 		while(head != NULL){
-			if(head->cargo.data.intData == data) return 1;
+			if(data.type == INT){
+				if(head->cargo.data.i == data.data.i) return 1;
+			} else if (data.type == DOUBLE){
+				if(head->cargo.data.d == data.data.d) return 1;
+			}
+
+			//TODO: Add more types here
+
 		}
 		return 0;
 	}
