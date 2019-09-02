@@ -8,8 +8,8 @@
 #define LONG 8
 
 #define K 7703
-#define P 3011
-#define N 5651
+#define P 5651
+#define N 3011
 
 union rawData{
 	int intData;
@@ -51,12 +51,14 @@ struct hashTable* createHashTable(int (*hashFunction)(int));
 int perfectHashFunction(int x);
 void addHT(struct hashTable* hTable, int data);
 int checkIfInTable(struct hashTable* hTable, int data);
+void printHashFunction(int (*hashFunction)(int), int size);
 
 int main(){
 	printf("%d\n", findPrime(30));
 	struct hashTable* testHashTable = createHashTable(perfectHashFunction);
 	addHT(testHashTable, 5);
 	printf("%d\n", checkIfInTable(testHashTable,6));
+	printHashFunction(&perfectHashFunction, 40);
 }
 
 int* createSieve(int size){
@@ -144,7 +146,7 @@ void removeLL(struct node* head, int index){
 }
 
 int llLength(struct node* head) {
-	struct node* currentNode = head;
+	struct node* currentNode = head->nextNode;
 	int size = 0;
 	while(currentNode != NULL){
 		currentNode = currentNode->nextNode;
@@ -188,4 +190,11 @@ int checkIfInTable(struct hashTable* hTable, int data){
 		}
 		return 0;
 	}
+}
+
+void printHashFunction(int (*hashFunction)(int), int size){
+	for(int x = 0; x < size; x++){
+		printf("%d  ", (*hashFunction)(x));
+	}
+	printf("\n");
 }
